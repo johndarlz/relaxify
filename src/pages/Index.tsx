@@ -2,6 +2,8 @@
 import { motion } from "framer-motion";
 import { Heart, Brain, Smartphone } from "lucide-react";
 import Navbar from "../components/Navbar";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const features = [
   {
@@ -27,6 +29,21 @@ const features = [
 ];
 
 const Index = () => {
+  const { signInWithGoogle, user } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-relaxify-bg-mint">
       <Navbar />
@@ -76,12 +93,21 @@ const Index = () => {
             transition={{ delay: 0.5 }}
             className="flex flex-col sm:flex-row justify-center gap-4 mb-16"
           >
-            <a
-              href="/assessment"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-relaxify-primary hover:bg-relaxify-primary/90 transition-colors duration-200"
-            >
-              Start Your Journey
-            </a>
+            {user ? (
+              <a
+                href="/assessment"
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-relaxify-primary hover:bg-relaxify-primary/90 transition-colors duration-200"
+              >
+                Start Your Journey
+              </a>
+            ) : (
+              <button
+                onClick={handleSignIn}
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-relaxify-primary hover:bg-relaxify-primary/90 transition-colors duration-200"
+              >
+                Sign in with Google
+              </button>
+            )}
             <a
               href="/learn-more"
               className="inline-flex items-center justify-center px-6 py-3 border border-relaxify-primary text-base font-medium rounded-lg text-relaxify-primary bg-transparent hover:bg-relaxify-primary/5 transition-colors duration-200"
