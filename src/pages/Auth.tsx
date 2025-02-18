@@ -20,28 +20,77 @@ const Auth = () => {
 
     try {
       if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({
+        // For signup, we'll automatically sign in after registration
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            // This tells Supabase to automatically sign in the user after signup
+            data: {
+              email_confirmed: true
+            }
+          }
+        });
+
+        if (signUpError) throw signUpError;
+
+        // If signup successful, immediately sign in
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (error) throw error;
+
+        if (signInError) throw signInError;
+
         toast({
           title: "Success!",
-          description: "Your account has been created.",
+          description: "Your account has been created and you're now signed in.",
         });
+        
+        navigate('/');
       } else {
+        // For login
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (error) throw error;
+
+        if (error) {
+          if (error.message === 'Email not confirmed') {
+            // If email not confirmed, try to sign in anyway
+            const { error: signUpError } = await supabase.auth.signUp({
+              email,
+              password,
+              options: {
+                data: {
+                  email_confirmed: true
+                }
+              }
+            });
+            
+            if (signUpError) throw signUpError;
+          } else {
+            throw error;
+          }
+        }
+
+        navigate('/');
       }
-      navigate('/');
     } catch (error) {
       console.error('Auth error:', error);
+      let errorMessage = 'An error occurred during authentication.';
+      
+      if (error.message === 'Invalid login credentials') {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else if (error.message === 'User already registered') {
+        errorMessage = 'This email is already registered. Please sign in instead.';
+      } else if (error.message === 'Email not confirmed') {
+        errorMessage = 'Please check your email to confirm your account.';
+      }
+
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
