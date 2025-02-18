@@ -9,7 +9,127 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      meditation_sessions: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          duration: number
+          id: string
+          notes: string | null
+          stress_level_after: number | null
+          stress_level_before: number | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          duration: number
+          id?: string
+          notes?: string | null
+          stress_level_after?: number | null
+          stress_level_before?: number | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          duration?: number
+          id?: string
+          notes?: string | null
+          stress_level_after?: number | null
+          stress_level_before?: number | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meditation_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          meditation_minutes: number | null
+          stress_level: number | null
+          updated_at: string
+          yoga_sessions: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          meditation_minutes?: number | null
+          stress_level?: number | null
+          updated_at?: string
+          yoga_sessions?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          meditation_minutes?: number | null
+          stress_level?: number | null
+          updated_at?: string
+          yoga_sessions?: number | null
+        }
+        Relationships: []
+      }
+      yoga_sessions: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          difficulty: string
+          duration: number
+          id: string
+          notes: string | null
+          poses: Json | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          difficulty: string
+          duration: number
+          id?: string
+          notes?: string | null
+          poses?: Json | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          difficulty?: string
+          duration?: number
+          id?: string
+          notes?: string | null
+          poses?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yoga_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
