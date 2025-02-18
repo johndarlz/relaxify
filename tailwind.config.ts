@@ -21,10 +21,12 @@ export default {
     extend: {
       colors: {
         relaxify: {
-          primary: "#8DAB7F",
-          secondary: "#E2E4F6",
-          accent: "#FDF8F5",
-          text: "#2D3436",
+          primary: "#4A90E2",    // Soft Blue
+          secondary: "#A3D9A5",  // Light Green
+          lavender: "#D1C4E9",   // Lavender
+          accent: "#FFB6B9",     // Peachy Pink
+          yellow: "#F7E071",     // Soft Yellow
+          text: "#333333",       // Dark Gray
           "bg-mint": "#F5F9F7",
         },
         border: "hsl(var(--border))",

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import Assessment from "./pages/Assessment";
 import Yoga from "./pages/Yoga";
 import Meditation from "./pages/Meditation";
@@ -24,7 +25,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user) {
-    return <Navigate to="/" />;
+    return <Navigate to="/auth" />;
   }
 
   return <>{children}</>;
@@ -39,6 +40,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/assessment" element={
               <ProtectedRoute>
                 <Assessment />
