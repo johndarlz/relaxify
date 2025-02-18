@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Menu, X, Lotus } from "lucide-react";
+import { Menu, X, Brain } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
@@ -19,7 +19,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
-            <Lotus className="h-8 w-8 text-relaxify-primary" />
+            <Brain className="h-8 w-8 text-relaxify-primary" />
             <span className="ml-2 text-xl font-semibold text-relaxify-text">Relaxify</span>
           </div>
 

@@ -1,6 +1,6 @@
 
 import { motion } from "framer-motion";
-import { Lotus, Heart, Brain, Smartphone } from "lucide-react";
+import { Heart, Brain, Smartphone } from "lucide-react";
 import Navbar from "../components/Navbar";
 
 const features = [
@@ -10,7 +10,7 @@ const features = [
     description: "Real-time stress analysis using advanced AI technology",
   },
   {
-    icon: <Lotus className="w-6 h-6" />,
+    icon: <Brain className="w-6 h-6" />,
     title: "AI Yoga Assistant",
     description: "Get personalized pose corrections and recommendations",
   },
