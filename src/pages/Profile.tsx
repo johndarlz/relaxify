@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Heart, Brain, Activity } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Profile {
   first_name: string;
@@ -17,8 +18,15 @@ interface Profile {
 
 const Profile = () => {
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    avatar_url: ''
+  });
 
   useEffect(() => {
     const getProfile = async () => {
@@ -31,6 +39,11 @@ const Profile = () => {
 
         if (error) throw error;
         setProfile(data);
+        setFormData({
+          first_name: data?.first_name || '',
+          last_name: data?.last_name || '',
+          avatar_url: data?.avatar_url || ''
+        });
       } catch (error) {
         console.error('Error loading profile:', error);
       } finally {
@@ -40,6 +53,33 @@ const Profile = () => {
 
     if (user) getProfile();
   }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(formData)
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      setProfile(prev => ({ ...prev, ...formData }));
+      setIsEditing(false);
+      
+      toast({
+        title: "Success",
+        description: "Profile updated successfully!",
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -55,52 +95,118 @@ const Profile = () => {
           className="max-w-4xl mx-auto"
         >
           <div className="bg-white rounded-lg shadow-lg p-8">
-            <div className="flex items-center space-x-6 mb-8">
-              <img
-                src={profile?.avatar_url || '/placeholder.svg'}
-                alt="Profile"
-                className="w-24 h-24 rounded-full object-cover"
-              />
-              <div>
-                <h1 className="text-3xl font-bold text-relaxify-text">
-                  {profile?.first_name} {profile?.last_name}
-                </h1>
-                <p className="text-gray-600">{user?.email}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-relaxify-primary/10 rounded-lg p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <Heart className="w-6 h-6 text-relaxify-primary" />
-                  <h3 className="text-lg font-semibold">Stress Level</h3>
+            {isEditing ? (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-relaxify-primary"
+                  />
                 </div>
-                <p className="text-2xl font-bold">{profile?.stress_level}%</p>
-              </div>
-
-              <div className="bg-relaxify-primary/10 rounded-lg p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <Brain className="w-6 h-6 text-relaxify-primary" />
-                  <h3 className="text-lg font-semibold">Meditation Time</h3>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-relaxify-primary"
+                  />
                 </div>
-                <p className="text-2xl font-bold">{profile?.meditation_minutes} mins</p>
-              </div>
-
-              <div className="bg-relaxify-primary/10 rounded-lg p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <Activity className="w-6 h-6 text-relaxify-primary" />
-                  <h3 className="text-lg font-semibold">Yoga Sessions</h3>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Avatar URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.avatar_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-relaxify-primary"
+                  />
                 </div>
-                <p className="text-2xl font-bold">{profile?.yoga_sessions}</p>
-              </div>
-            </div>
 
-            <button
-              onClick={() => signOut()}
-              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-            >
-              Sign Out
-            </button>
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-relaxify-primary text-white rounded-lg hover:bg-relaxify-primary/90 transition-colors"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="flex items-center space-x-6 mb-8">
+                  <img
+                    src={profile?.avatar_url || '/placeholder.svg'}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full object-cover"
+                  />
+                  <div>
+                    <h1 className="text-3xl font-bold text-relaxify-text">
+                      {profile?.first_name || 'Add'} {profile?.last_name || 'Your Name'}
+                    </h1>
+                    <p className="text-gray-600">{user?.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-relaxify-primary/10 rounded-lg p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <Heart className="w-6 h-6 text-relaxify-primary" />
+                      <h3 className="text-lg font-semibold">Stress Level</h3>
+                    </div>
+                    <p className="text-2xl font-bold">{profile?.stress_level || 0}%</p>
+                  </div>
+
+                  <div className="bg-relaxify-primary/10 rounded-lg p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <Brain className="w-6 h-6 text-relaxify-primary" />
+                      <h3 className="text-lg font-semibold">Meditation Time</h3>
+                    </div>
+                    <p className="text-2xl font-bold">{profile?.meditation_minutes || 0} mins</p>
+                  </div>
+
+                  <div className="bg-relaxify-primary/10 rounded-lg p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <Activity className="w-6 h-6 text-relaxify-primary" />
+                      <h3 className="text-lg font-semibold">Yoga Sessions</h3>
+                    </div>
+                    <p className="text-2xl font-bold">{profile?.yoga_sessions || 0}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-6 py-2 bg-relaxify-primary text-white rounded-lg hover:bg-relaxify-primary/90 transition-colors"
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={() => signOut()}
+                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
       </div>
