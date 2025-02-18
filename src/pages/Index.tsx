@@ -1,6 +1,7 @@
 
 import { motion } from "framer-motion";
 import { Heart, Brain, Smartphone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -10,39 +11,31 @@ const features = [
     icon: <Heart className="w-6 h-6" />,
     title: "Stress Detection",
     description: "Real-time stress analysis using advanced AI technology",
+    path: "/assessment"
   },
   {
     icon: <Brain className="w-6 h-6" />,
     title: "AI Yoga Assistant",
     description: "Get personalized pose corrections and recommendations",
+    path: "/yoga"
   },
   {
     icon: <Brain className="w-6 h-6" />,
     title: "Smart Meditation",
     description: "Guided sessions adapted to your emotional state",
+    path: "/meditation"
   },
   {
     icon: <Smartphone className="w-6 h-6" />,
     title: "Progress Tracking",
     description: "Monitor your wellness journey with detailed insights",
+    path: "/profile"
   },
 ];
 
 const Index = () => {
-  const { signInWithGoogle, user } = useAuth();
-  const { toast } = useToast();
-
-  const handleSignIn = async () => {
-    try {
-      await signInWithGoogle();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign in with Google. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-relaxify-bg-mint">
@@ -94,26 +87,20 @@ const Index = () => {
             className="flex flex-col sm:flex-row justify-center gap-4 mb-16"
           >
             {user ? (
-              <a
-                href="/assessment"
+              <button
+                onClick={() => navigate('/assessment')}
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-relaxify-primary hover:bg-relaxify-primary/90 transition-colors duration-200"
               >
                 Start Your Journey
-              </a>
+              </button>
             ) : (
               <button
-                onClick={handleSignIn}
+                onClick={() => navigate('/auth')}
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-relaxify-primary hover:bg-relaxify-primary/90 transition-colors duration-200"
               >
-                Sign in with Google
+                Sign in to Start
               </button>
             )}
-            <a
-              href="/learn-more"
-              className="inline-flex items-center justify-center px-6 py-3 border border-relaxify-primary text-base font-medium rounded-lg text-relaxify-primary bg-transparent hover:bg-relaxify-primary/5 transition-colors duration-200"
-            >
-              Learn More
-            </a>
           </motion.div>
         </div>
       </motion.section>
@@ -128,7 +115,8 @@ const Index = () => {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
-                className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200"
+                className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+                onClick={() => user ? navigate(feature.path) : navigate('/auth')}
               >
                 <div className="w-12 h-12 bg-relaxify-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <div className="text-relaxify-primary">
