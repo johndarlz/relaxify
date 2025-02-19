@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Heart, Brain, Smartphone, Watch, Activity, Wifi } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 const features = [
   {
@@ -55,12 +57,14 @@ const healthDevices = [
   }
 ];
 
+type HealthDeviceRow = Database['public']['Tables']['health_devices']['Row'];
+
 const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { data: connectedDevices } = useQuery({
+  const { data: connectedDevices } = useQuery<HealthDeviceRow[]>({
     queryKey: ['health-devices', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -84,14 +88,12 @@ const Index = () => {
     try {
       const { data, error } = await supabase
         .from('health_devices')
-        .insert([
-          {
-            user_id: user.id,
-            device_type: deviceType,
-            device_name: deviceName,
-            is_connected: true
-          }
-        ])
+        .insert({
+          user_id: user.id,
+          device_type: deviceType,
+          device_name: deviceName,
+          is_connected: true
+        })
         .select()
         .single();
 

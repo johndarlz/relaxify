@@ -9,6 +9,77 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      health_data: {
+        Row: {
+          created_at: string | null
+          data_type: string
+          device_id: string
+          id: string
+          timestamp: string | null
+          unit: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string | null
+          data_type: string
+          device_id: string
+          id?: string
+          timestamp?: string | null
+          unit: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string | null
+          data_type?: string
+          device_id?: string
+          id?: string
+          timestamp?: string | null
+          unit?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_data_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "health_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_devices: {
+        Row: {
+          created_at: string | null
+          device_name: string
+          device_type: string
+          id: string
+          is_connected: boolean | null
+          last_synced: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_name: string
+          device_type: string
+          id?: string
+          is_connected?: boolean | null
+          last_synced?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_name?: string
+          device_type?: string
+          id?: string
+          is_connected?: boolean | null
+          last_synced?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       meditation_sessions: {
         Row: {
           completed: boolean | null
