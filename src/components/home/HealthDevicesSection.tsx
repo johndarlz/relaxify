@@ -45,4 +45,3 @@ const HealthDevicesSection = () => {
 };
 
 export default HealthDevicesSection;
-
