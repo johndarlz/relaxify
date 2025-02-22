@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Heart, Brain, Activity } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import ProgressDashboard from '@/components/dashboard/ProgressDashboard';
 
 interface Profile {
   first_name: string;
@@ -165,30 +166,9 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-relaxify-primary/10 rounded-lg p-6">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <Heart className="w-6 h-6 text-relaxify-primary" />
-                      <h3 className="text-lg font-semibold">Stress Level</h3>
-                    </div>
-                    <p className="text-2xl font-bold">{profile?.stress_level || 0}%</p>
-                  </div>
-
-                  <div className="bg-relaxify-primary/10 rounded-lg p-6">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <Brain className="w-6 h-6 text-relaxify-primary" />
-                      <h3 className="text-lg font-semibold">Meditation Time</h3>
-                    </div>
-                    <p className="text-2xl font-bold">{profile?.meditation_minutes || 0} mins</p>
-                  </div>
-
-                  <div className="bg-relaxify-primary/10 rounded-lg p-6">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <Activity className="w-6 h-6 text-relaxify-primary" />
-                      <h3 className="text-lg font-semibold">Yoga Sessions</h3>
-                    </div>
-                    <p className="text-2xl font-bold">{profile?.yoga_sessions || 0}</p>
-                  </div>
+                <div className="mb-8">
+                  <h2 className="text-2xl font-semibold mb-6">Progress Dashboard</h2>
+                  <ProgressDashboard />
                 </div>
 
                 <div className="flex gap-4">
