@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import type { Json } from "@/integrations/supabase/types";
 import { useState } from "react";
 
 const healthDevices = [
@@ -17,8 +18,11 @@ const healthDevices = [
     metrics: ["Heart Rate", "Steps", "Sleep"],
     services: ['heart_rate'],
     filters: {
-      services: ['heart_rate'],
-      namePrefix: 'Apple Watch'
+      filters: [{
+        services: ['heart_rate'],
+        namePrefix: 'Apple Watch'
+      }],
+      optionalServices: ['heart_rate']
     }
   },
   {
@@ -28,7 +32,10 @@ const healthDevices = [
     metrics: ["Activity", "Calories", "Distance"],
     services: ['fitness_misc'],
     filters: {
-      namePrefix: 'Fitbit'
+      filters: [{
+        namePrefix: 'Fitbit'
+      }],
+      optionalServices: ['fitness_misc']
     }
   },
   {
@@ -38,7 +45,10 @@ const healthDevices = [
     metrics: ["Sleep Quality", "Readiness", "Recovery"],
     services: ['heart_rate'],
     filters: {
-      namePrefix: 'Oura'
+      filters: [{
+        namePrefix: 'Oura'
+      }],
+      optionalServices: ['heart_rate']
     }
   }
 ];
@@ -83,15 +93,16 @@ const HealthDevicesSection = () => {
       const characteristic = await service.getCharacteristic('heart_rate_measurement');
       
       await characteristic.startNotifications();
-      characteristic.addEventListener('characteristicvaluechanged', async (event: Event) => {
-        const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
+      characteristic.addEventListener('characteristicvaluechanged', async (event) => {
+        const target = event.target as BluetoothRemoteGATTCharacteristic;
+        const value = target.value;
         if (!value) return;
         
         const flags = value.getUint8(0);
         const rate16Bits = flags & 0x1;
         const heartRate = rate16Bits ? value.getUint16(1, true) : value.getUint8(1);
         
-        const healthData: HealthData = {
+        const healthData: Json = {
           heart_rate: heartRate,
           timestamp: new Date().toISOString()
         };
@@ -150,10 +161,7 @@ const HealthDevicesSection = () => {
       setScanning(true);
       setConnecting(deviceType);
 
-      const device = await navigator.bluetooth.requestDevice({
-        ...filters,
-        optionalServices: ['heart_rate', 'fitness_misc']
-      });
+      const device = await navigator.bluetooth.requestDevice(filters);
 
       const server = await device.gatt?.connect();
       if (!server) throw new Error("Could not connect to device");
