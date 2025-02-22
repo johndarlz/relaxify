@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Watch, Activity, Heart, Wifi, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -15,7 +15,7 @@ const healthDevices = [
     name: "Apple Watch",
     type: "smartwatch",
     metrics: ["Heart Rate", "Steps", "Sleep"],
-    services: ['heart_rate'], // Bluetooth service identifiers
+    services: ['heart_rate'],
     filters: {
       services: ['heart_rate'],
       namePrefix: 'Apple Watch'
@@ -44,6 +44,11 @@ const healthDevices = [
 ];
 
 type HealthDeviceRow = Database['public']['Tables']['health_devices']['Row'];
+
+interface HealthData {
+  heart_rate: number;
+  timestamp: string;
+}
 
 const HealthDevicesSection = () => {
   const { user } = useAuth();
@@ -74,7 +79,6 @@ const HealthDevicesSection = () => {
     deviceId: string
   ) => {
     try {
-      // Example for heart rate monitoring
       const service = await server.getPrimaryService('heart_rate');
       const characteristic = await service.getCharacteristic('heart_rate_measurement');
       
@@ -83,13 +87,16 @@ const HealthDevicesSection = () => {
         const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
         if (!value) return;
         
-        // Parse heart rate data according to Bluetooth GATT specification
         const flags = value.getUint8(0);
         const rate16Bits = flags & 0x1;
         const heartRate = rate16Bits ? value.getUint16(1, true) : value.getUint8(1);
         
-        // Store the data
-        const { error } = await supabase
+        const healthData: HealthData = {
+          heart_rate: heartRate,
+          timestamp: new Date().toISOString()
+        };
+        
+        const { error: dataError } = await supabase
           .from('health_data')
           .insert({
             user_id: user?.id,
@@ -99,17 +106,20 @@ const HealthDevicesSection = () => {
             unit: 'bpm'
           });
           
-        if (error) {
-          console.error('Error storing health data:', error);
+        if (dataError) {
+          console.error('Error storing health data:', dataError);
         }
         
-        // Update last_data in health_devices
-        await supabase
+        const { error: deviceError } = await supabase
           .from('health_devices')
           .update({
-            last_data: { heart_rate: heartRate, timestamp: new Date().toISOString() }
+            last_data: healthData
           })
           .eq('id', deviceId);
+
+        if (deviceError) {
+          console.error('Error updating device data:', deviceError);
+        }
       });
     } catch (error) {
       console.error('Error setting up data handling:', error);
@@ -140,17 +150,14 @@ const HealthDevicesSection = () => {
       setScanning(true);
       setConnecting(deviceType);
 
-      // Request Bluetooth device
       const device = await navigator.bluetooth.requestDevice({
         ...filters,
         optionalServices: ['heart_rate', 'fitness_misc']
       });
 
-      // Connect to the device
       const server = await device.gatt?.connect();
       if (!server) throw new Error("Could not connect to device");
 
-      // Store device in database
       const { data, error } = await supabase
         .from('health_devices')
         .insert({
@@ -165,7 +172,6 @@ const HealthDevicesSection = () => {
 
       if (error) throw error;
 
-      // Set up data handling
       await handleBluetoothData(device, server, deviceType, data.id);
 
       toast({
@@ -173,7 +179,6 @@ const HealthDevicesSection = () => {
         description: `Successfully connected to ${deviceName}`,
       });
 
-      // Refresh device list
       refetch();
 
     } catch (error) {
@@ -242,10 +247,10 @@ const HealthDevicesSection = () => {
                 {connectedDevice?.last_data && (
                   <div className="mb-4 p-3 bg-relaxify-primary/5 rounded-lg">
                     <p className="text-sm text-gray-600">
-                      Latest Reading: {connectedDevice.last_data.heart_rate} bpm
+                      Latest Reading: {(connectedDevice.last_data as HealthData).heart_rate} bpm
                       <br />
                       <span className="text-xs text-gray-500">
-                        {new Date(connectedDevice.last_data.timestamp).toLocaleString()}
+                        {new Date((connectedDevice.last_data as HealthData).timestamp).toLocaleString()}
                       </span>
                     </p>
                   </div>
@@ -281,3 +286,4 @@ const HealthDevicesSection = () => {
 };
 
 export default HealthDevicesSection;
+

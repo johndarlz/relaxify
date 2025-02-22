@@ -57,6 +57,7 @@ export type Database = {
           device_type: string
           id: string
           is_connected: boolean | null
+          last_data: Json | null
           last_synced: string | null
           user_id: string
         }
@@ -66,6 +67,7 @@ export type Database = {
           device_type: string
           id?: string
           is_connected?: boolean | null
+          last_data?: Json | null
           last_synced?: string | null
           user_id: string
         }
@@ -75,6 +77,7 @@ export type Database = {
           device_type?: string
           id?: string
           is_connected?: boolean | null
+          last_data?: Json | null
           last_synced?: string | null
           user_id?: string
         }
